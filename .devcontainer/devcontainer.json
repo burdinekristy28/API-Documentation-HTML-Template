@@ -1,5 +1,54 @@
-{
-  "image": "mcr.microsoft.com/devcontainers/universal:2",
-  "features": {
-  }
-}
+-- 创建Hologres外部表
+CREATE FOREIGN TABLE IF NOT EXISTS public.dws_overview_by_repo_by_month_dailyupdate (
+    repo_id    INT8,
+    repo_name    TEXT,
+    stars    INT8,
+    commits    INT8,
+    pushes    INT8,
+    total_prs    INT8,
+    pr_creators    INT8,
+    pr_reviews    INT8,
+    pr_reviewers    INT8,
+    total_issues    INT8,
+    forks    INT8,
+    month    TEXT
+)
+SERVER odps_server
+OPTIONS (
+    project_name 'bigdata_public_dataset#github_events',
+    table_name 'dws_overview_by_repo_by_month_dailyupdate'
+);
+
+-- 为外部表及其字段添加注释
+COMMENT ON FOREIGN TABLE public.dws_overview_by_repo_by_month_dailyupdate IS 'Github公开事件数据聚合表';
+-- COMMENT ON COLUMN public.dws_overview_by_repo_by_month_dailyupdate.repo_id IS 'repoID';
+-- COMMENT ON COLUMN public.dws_overview_by_repo_by_month_dailyupdate.repo_name IS 'repo全名：owner/Repository_name';
+-- COMMENT ON COLUMN public.dws_overview_by_repo_by_month_dailyupdate.stars IS 'repo star数量';
+-- COMMENT ON COLUMN public.dws_overview_by_repo_by_month_dailyupdate.commits IS 'repo commits数量';
+-- COMMENT ON COLUMN public.dws_overview_by_repo_by_month_dailyupdate.pushes IS 'repo commits数量';
+-- COMMENT ON COLUMN public.dws_overview_by_repo_by_month_dailyupdate.total_prs IS 'repo 所有的pull_request数量';
+-- COMMENT ON COLUMN public.dws_overview_by_repo_by_month_dailyupdate.pr_creators IS 'repo 所有的pull_request提交者数量';
+-- COMMENT ON COLUMN public.dws_overview_by_repo_by_month_dailyupdate.pr_reviews IS 'repo 所有的pr_reviews数量';
+-- COMMENT ON COLUMN public.dws_overview_by_repo_by_month_dailyupdate.pr_reviewers IS 'repo 所有的pr_reviewers数量';
+-- COMMENT ON COLUMN public.dws_overview_by_repo_by_month_dailyupdate.total_issues IS 'repo 所有的问题数量';
+-- COMMENT ON COLUMN public.dws_overview_by_repo_by_month_dailyupdate.forks IS 'repo 收藏数量';
+-- COMMENT ON COLUMN public.dws_overview_by_repo_by_month_dailyupdate.month IS '事件发生所在月，如2015年10月，month=2015-10';
+
+
+-- 读取样例数据
+SELECT 
+    repo_id,    -- repoID
+    repo_name,    -- repo全名：owner/Repository_name
+    stars,    -- repo star数量
+    commits,    -- repo commits数量
+    pushes,    -- repo commits数量
+    total_prs,    -- repo 所有的pull_request数量
+    pr_creators,    -- repo 所有的pull_request提交者数量
+    pr_reviews,    -- repo 所有的pr_reviews数量
+    pr_reviewers,    -- repo 所有的pr_reviewers数量
+    total_issues,    -- repo 所有的问题数量
+    forks,    -- repo 收藏数量
+    month    -- 事件发生所在月，如2015年10月，month=2015-10 
+  FROM public.dws_overview_by_repo_by_month_dailyupdate 
+ WHERE month = TO_CHAR(CURRENT_DATE - INTERVAL '1 month', 'yyyy-mm') 
+ LIMIT 100;
